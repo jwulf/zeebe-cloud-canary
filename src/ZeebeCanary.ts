@@ -1,0 +1,94 @@
+import * as ZB from "zeebe-node";
+import { ZBClient } from "zeebe-node";
+import fs from "fs";
+import path from "path";
+import * as micromustache from "micromustache";
+import Axios from "axios";
+
+export interface ZeebeCanaryOptions {
+  SquawkUrl?: string;
+  ChirpUrl: string;
+  HeartbeatPeriodSeconds: number;
+  CanaryId: string;
+  ZBConfig?: ZB.ZBClientOptions;
+}
+
+export class ZeebeCanary {
+  SquawkUrl: string | undefined;
+  ChirpUrl: string;
+  HeartbeatPeriodSeconds: any;
+  CanaryId: string;
+  zbc: ZB.ZBClient;
+  squawkTimer!: NodeJS.Timeout;
+
+  constructor(config: ZeebeCanaryOptions) {
+    this.SquawkUrl = config.SquawkUrl;
+    this.ChirpUrl = config.ChirpUrl;
+    this.HeartbeatPeriodSeconds = config.HeartbeatPeriodSeconds;
+    this.CanaryId = config.CanaryId;
+    this.zbc = new ZBClient(config.ZBConfig);
+
+    this.bootstrap();
+  }
+
+  private async bootstrap() {
+    await this.resetSquawkTimer();
+    await this.deployCanaryWorkflow();
+    await this.startCanaryWorkflow();
+    await this.setupWorker();
+  }
+
+  private async deployCanaryWorkflow() {
+    const workflow = fs.readFileSync(
+      path.join(__dirname, "../bpmn/canary.bpmn"),
+      "utf-8"
+    );
+    const renderedWorkflow = micromustache.render(workflow, {
+      canaryId: this.CanaryId,
+      heartbeatSeconds: this.HeartbeatPeriodSeconds
+    });
+    await this.zbc.deployWorkflow({
+      definition: Buffer.from(renderedWorkflow),
+      name: `Canary-${this.CanaryId}`
+    });
+  }
+
+  private async startCanaryWorkflow() {
+    // Stop any running instance of the workflow
+    await this.zbc.publishMessage({
+      name: "halt_canary",
+      correlationKey: this.CanaryId,
+      timeToLive: 0,
+      variables: {}
+    });
+    // Start an instance of the process
+    // @TODO - redeploy if this throws due to NOT FOUND
+    await this.zbc.createWorkflowInstance(`canary-${this.CanaryId}`, {
+      canaryId: this.CanaryId
+    });
+  }
+
+  private setupWorker() {
+    this.zbc.createWorker(null, `chirp-${this.CanaryId}`, (job, complete) => {
+      complete.success();
+      this.startCanaryWorkflow();
+      if (this.ChirpUrl) {
+        Axios.get(this.ChirpUrl);
+      }
+      this.resetSquawkTimer();
+    });
+  }
+
+  private resetSquawkTimer() {
+    if (this.SquawkUrl) {
+      clearTimeout(this.squawkTimer);
+      this.squawkTimer = setTimeout(() => {
+        Axios.get(this.SquawkUrl!);
+      }, this.HeartbeatPeriodSeconds * 1500);
+    }
+  }
+
+  close() {
+    this.zbc.close();
+  }
+}

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0hzyv7s" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Zeebe Modeler" exporterVersion="0.7.0-alpha.2">
+  <bpmn:process id="canary-{{canaryId}}" name="Canary Healthcheck" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_0ftwb47" name="Start Canary">
+      <bpmn:outgoing>SequenceFlow_0dugk8k</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:subProcess id="SubProcess_1tkcsf1">
+      <bpmn:incoming>SequenceFlow_0dugk8k</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0ff0dc8</bpmn:outgoing>
+      <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_0adqvib" name="Heartbeat timer">
+        <bpmn:incoming>SequenceFlow_1it722g</bpmn:incoming>
+        <bpmn:outgoing>SequenceFlow_113xe2b</bpmn:outgoing>
+        <bpmn:timerEventDefinition>
+          <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT{{heartbeatSeconds}}S</bpmn:timeDuration>
+        </bpmn:timerEventDefinition>
+      </bpmn:intermediateCatchEvent>
+      <bpmn:serviceTask id="ServiceTask_1a77qc5" name="Chirp">
+        <bpmn:extensionElements>
+          <zeebe:taskDefinition type="chirp-{{canaryId}}" retries="0" />
+        </bpmn:extensionElements>
+        <bpmn:incoming>SequenceFlow_113xe2b</bpmn:incoming>
+        <bpmn:outgoing>SequenceFlow_1aeyuvn</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:endEvent id="EndEvent_0gfpo5c">
+        <bpmn:incoming>SequenceFlow_1aeyuvn</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:startEvent id="StartEvent_1hixrm5">
+        <bpmn:outgoing>SequenceFlow_1it722g</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sequenceFlow id="SequenceFlow_1it722g" sourceRef="StartEvent_1hixrm5" targetRef="IntermediateCatchEvent_0adqvib" />
+      <bpmn:sequenceFlow id="SequenceFlow_113xe2b" sourceRef="IntermediateCatchEvent_0adqvib" targetRef="ServiceTask_1a77qc5" />
+      <bpmn:sequenceFlow id="SequenceFlow_1aeyuvn" sourceRef="ServiceTask_1a77qc5" targetRef="EndEvent_0gfpo5c" />
+    </bpmn:subProcess>
+    <bpmn:boundaryEvent id="BoundaryEvent_04tw63e" name="Halt Canary" attachedToRef="SubProcess_1tkcsf1">
+      <bpmn:outgoing>SequenceFlow_1gg0ima</bpmn:outgoing>
+      <bpmn:messageEventDefinition messageRef="Message_136y6i8" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="EndEvent_1i8i47e">
+      <bpmn:incoming>SequenceFlow_1gg0ima</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1gg0ima" sourceRef="BoundaryEvent_04tw63e" targetRef="EndEvent_1i8i47e" />
+    <bpmn:endEvent id="EndEvent_0oa9ycr">
+      <bpmn:incoming>SequenceFlow_0ff0dc8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0ff0dc8" sourceRef="SubProcess_1tkcsf1" targetRef="EndEvent_0oa9ycr" />
+    <bpmn:sequenceFlow id="SequenceFlow_0dugk8k" sourceRef="StartEvent_0ftwb47" targetRef="SubProcess_1tkcsf1" />
+  </bpmn:process>
+  <bpmn:message id="Message_0s3jp4c" name="halt_canary">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="canaryId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmn:message id="Message_136y6i8" name="halt-canary">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="canaryId" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="canary-">
+      <bpmndi:BPMNShape id="ServiceTask_1a77qc5_di" bpmnElement="ServiceTask_1a77qc5">
+        <dc:Bounds x="490" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_0ftwb47_di" bpmnElement="StartEvent_0ftwb47">
+        <dc:Bounds x="172" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="159" y="138" width="62" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_0adqvib_di" bpmnElement="IntermediateCatchEvent_0adqvib">
+        <dc:Bounds x="392" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="373" y="205" width="76" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0gfpo5c_di" bpmnElement="EndEvent_0gfpo5c">
+        <dc:Bounds x="642" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="SubProcess_1tkcsf1_di" bpmnElement="SubProcess_1tkcsf1" isExpanded="true">
+        <dc:Bounds x="270" y="80" width="440" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_04tw63e_di" bpmnElement="BoundaryEvent_04tw63e">
+        <dc:Bounds x="654" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="642" y="243" width="59" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1i8i47e_di" bpmnElement="EndEvent_1i8i47e">
+        <dc:Bounds x="752" y="342" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1gg0ima_di" bpmnElement="SequenceFlow_1gg0ima">
+        <di:waypoint x="672" y="298" />
+        <di:waypoint x="672" y="360" />
+        <di:waypoint x="752" y="360" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_0oa9ycr_di" bpmnElement="EndEvent_0oa9ycr">
+        <dc:Bounds x="782" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1hixrm5_di" bpmnElement="StartEvent_1hixrm5">
+        <dc:Bounds x="312" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1it722g_di" bpmnElement="SequenceFlow_1it722g">
+        <di:waypoint x="348" y="180" />
+        <di:waypoint x="392" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_113xe2b_di" bpmnElement="SequenceFlow_113xe2b">
+        <di:waypoint x="428" y="180" />
+        <di:waypoint x="490" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1aeyuvn_di" bpmnElement="SequenceFlow_1aeyuvn">
+        <di:waypoint x="590" y="180" />
+        <di:waypoint x="642" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0ff0dc8_di" bpmnElement="SequenceFlow_0ff0dc8">
+        <di:waypoint x="710" y="180" />
+        <di:waypoint x="782" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0dugk8k_di" bpmnElement="SequenceFlow_0dugk8k">
+        <di:waypoint x="208" y="180" />
+        <di:waypoint x="270" y="180" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
