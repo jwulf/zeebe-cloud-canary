@@ -1,6 +1,6 @@
 # Zeebe Cloud Canary
 
-Use this package to allow your Zeebe applications to alert when they are not able to receive work from the broker - whether due to a broker outage or a dropped connection.
+Use this package to allow your Zeebe applications to alert when they are not able to receive work from the broker - whether due to a broker outage or a dropped connection. Read more about the use-cases on the [Zeebe blog](https://zeebe.io/blog/2019/11/operational-monitoring-cloud-canary/).
 
 The `ZeebeCanary` class deploys a workflow to the broker that starts a loop with a user-configured heartbeat interval, and spawns a worker that services the loop. 
 
