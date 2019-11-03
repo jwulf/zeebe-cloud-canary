@@ -27,7 +27,7 @@ import { ZeebeCanary } from 'zeebe-cloud-canary';
 
 // Uses the zeebe-node zero-conf constructor, either localhost or from ENV
 const canary = new ZeebeCanary({
-    ChirpUrl: `${healthchecks_io_url},
+    ChirpUrl: `${healthchecks_io_url}`,
     CanaryId: 'some-application-id',
     HeartbeatPeriodSeconds: 300
 })
