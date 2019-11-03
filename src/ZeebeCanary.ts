@@ -47,10 +47,16 @@ export class ZeebeCanary {
       canaryId: this.CanaryId,
       heartbeatSeconds: this.HeartbeatPeriodSeconds
     });
-    await this.zbc.deployWorkflow({
-      definition: Buffer.from(renderedWorkflow),
-      name: `Canary-${this.CanaryId}`
-    });
+    await this.zbc
+      .deployWorkflow({
+        definition: Buffer.from(renderedWorkflow),
+        name: `Canary-${this.CanaryId}`
+      })
+      .then(res =>
+        console.log(
+          `Deployed Canary process: ${res.workflows[0].bpmnProcessId}`
+        )
+      );
   }
 
   private async startCanaryWorkflow() {
