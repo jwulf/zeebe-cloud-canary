@@ -1,6 +1,6 @@
 {
   "name": "zeebe-cloud-canary",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Zeebe worker that monitors the aliveness connection with the Zeebe cluster",
   "main": "dist/index.js",
   "scripts": {
