@@ -60,13 +60,6 @@ export class ZeebeCanary {
   }
 
   private async startCanaryWorkflow() {
-    // Stop any running instance of the workflow
-    await this.zbc.publishMessage({
-      name: "halt_canary",
-      correlationKey: this.CanaryId,
-      timeToLive: 0,
-      variables: {}
-    });
     // Start an instance of the process
     // @TODO - redeploy if this throws due to NOT FOUND
     await this.zbc.createWorkflowInstance(`canary-${this.CanaryId}`, {
@@ -75,14 +68,28 @@ export class ZeebeCanary {
   }
 
   private setupWorker() {
-    this.zbc.createWorker(null, `chirp-${this.CanaryId}`, (job, complete) => {
-      complete.success();
-      this.startCanaryWorkflow();
-      if (this.ChirpUrl) {
-        Axios.get(this.ChirpUrl);
+    this.zbc.createWorker(
+      null,
+      `chirp-${this.CanaryId}`,
+      async (_, complete) => {
+        try {
+          await complete.success();
+          // Cancel any other running workflows
+          await this.zbc.publishMessage({
+            name: "halt_canary",
+            correlationKey: this.CanaryId,
+            timeToLive: 0,
+            variables: {}
+          });
+          if (this.ChirpUrl) {
+            Axios.get(this.ChirpUrl).catch(console.log);
+          }
+        } finally {
+          this.resetSquawkTimer();
+          await this.startCanaryWorkflow();
+        }
       }
-      this.resetSquawkTimer();
-    });
+    );
   }
 
   private resetSquawkTimer() {
