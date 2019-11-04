@@ -3,24 +3,24 @@ const http = require("http");
 
 const CHIRP_URL = process.env.CHIRP_URL || `http://localhost:3000`;
 const SQUAWK_URL = process.env.SQUAWK_URL || "http://localhost:3001";
-
+const CANARY_HEARTBEAT_SEC = process.env.CANARY_HEARTBEAT_SEC || 300;
 const canary = new ZeebeCanary({
   ChirpUrl: CHIRP_URL,
   SquawkUrl: SQUAWK_URL,
   CanaryId: "dockerised-canary",
-  HeartbeatPeriodSeconds: 300
+  HeartbeatPeriodSeconds: CANARY_HEARTBEAT_SEC
 });
 
 http
   .createServer((_, res) => {
     console.log(`[${new Date()}]  CHIRP`);
-    res.json({ ok: true });
+    res.end("CHIRP OK");
   })
   .listen(3000);
 
 http
   .createServer((_, res) => {
     console.log(`[${new Date()}]  ¡¡¡¡¡SQUAWK!!!!!`);
-    res.json({ ok: true });
+    res.end("SQUAWK OK");
   })
   .listen(3001);

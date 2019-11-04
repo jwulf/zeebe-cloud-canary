@@ -67,6 +67,7 @@ By default the canary chirps and squawks in the container log.
 You can set the following environment variables:
 
 ```
+CANARY_HEARTBEAT_MS
 CHIRP_URL
 SQUAWK_URL
 ZEEBE_ADDRESS
