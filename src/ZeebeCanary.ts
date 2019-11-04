@@ -97,7 +97,6 @@ export class ZeebeCanary {
           await complete.success();
           // Cancel any other running workflows
           await this.stopCanaryWorkflows();
-          await log("Published 'halt_canary' message");
           if (this.ChirpUrl) {
             Axios.get(this.ChirpUrl).catch(console.log);
           }
