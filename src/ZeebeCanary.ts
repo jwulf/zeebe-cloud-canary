@@ -14,6 +14,8 @@ export interface ZeebeCanaryOptions {
   Debug?: boolean;
 }
 
+let log;
+
 export class ZeebeCanary {
   SquawkUrl: string | undefined;
   ChirpUrl: string;
@@ -31,6 +33,7 @@ export class ZeebeCanary {
     this.zbc = new ZBClient(config.ZBConfig);
     this.Debug = config.Debug;
     this.bootstrap();
+    log = msg => (this.Debug && console.log(msg)) || msg;
   }
 
   private async bootstrap() {
@@ -70,9 +73,7 @@ export class ZeebeCanary {
         canaryId: this.CanaryId
       }
     );
-    if (this.Debug) {
-      console.log(`Created canary job ${res.workflowInstanceKey}`);
-    }
+    log(`Created canary job ${res.workflowInstanceKey}`);
   }
 
   private setupWorker() {
@@ -81,9 +82,7 @@ export class ZeebeCanary {
       `chirp-${this.CanaryId}`,
       async (job, complete) => {
         try {
-          if (this.Debug) {
-            console.log(`Completed canary job ${job.key}`);
-          }
+          log(`Completed canary job ${job.key}`);
           await complete.success();
           // Cancel any other running workflows
           await this.zbc.publishMessage({
@@ -92,7 +91,7 @@ export class ZeebeCanary {
             timeToLive: 0,
             variables: {}
           });
-          console.log("Published 'halt_canary' message");
+          log("Published 'halt_canary' message");
           if (this.ChirpUrl) {
             Axios.get(this.ChirpUrl).catch(console.log);
           }

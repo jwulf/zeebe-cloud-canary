@@ -8,6 +8,7 @@ services:
     entrypoint: /server/scripts/docker-entrypoint.sh
     environment:
       - CHIRP_URL
+      - DEBUG
       - SQUAWK_URL
       - CANARY_HEARTBEAT_SEC
       - ZEEBE_ADDRESS
