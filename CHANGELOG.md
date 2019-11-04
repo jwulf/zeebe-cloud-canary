@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0
+-   Add Docker Compose configuration to run canary straight outta GitHub.
+
 ## 1.0.5
 -   Fix syntax error in README.
 

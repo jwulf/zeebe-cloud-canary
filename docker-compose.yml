@@ -1,0 +1,23 @@
+version: "2"
+
+services:
+  canary:
+    image: sitapati/docker-alpine-python-node:12.4.1 # endpoint
+    container_name: canary
+    restart: always
+    entrypoint: /server/scripts/docker-entrypoint.sh
+    environment:
+      - CHIRP_URL
+      - SQUAWK_URL
+      - ZEEBE_ADDRESS
+      - ZEEBE_CLIENT_ID
+      - ZEEBE_CLIENT_SECRET
+      - ZEEBE_NODE_LOG_LEVEL=INFO
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+    volumes:
+      - ./:/server

@@ -53,3 +53,23 @@ const canary = new ZeebeCanary({
 If you use an external healthcheck ping like [healthchecks.io](https://healthchecks.io) for the `ChirpUrl`, it will squawk if the canary does not chirp on time, _and_ if the canary process dies, so it will also alert you on client application failure.
 
 You can use your own `SquawkUrl`, and it will be pinged if the canary does not get a chirp task in 1.5x the heartbeat interval - but not if the canary process itself (your application) dies.
+
+## Running in Docker
+
+You can run a fully dockerised Zeebe Cloud Canary like this:
+
+```bash
+ZEEBE_ADDRESS=<some_url_reachable_from_docker> docker-compose up
+```
+
+By default the canary chirps and squawks in the container log.
+
+You can set the following environment variables:
+
+```
+CHIRP_URL
+SQUAWK_URL
+ZEEBE_ADDRESS
+ZEEBE_CLIENT_ID
+ZEEBE_CLIENT_SECRET
+```   
