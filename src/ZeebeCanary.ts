@@ -33,12 +33,13 @@ export class ZeebeCanary {
     this.zbc = new ZBClient(config.ZBConfig);
     this.Debug = config.Debug;
     this.bootstrap();
-    log = msg => (this.Debug && console.log(msg)) || msg;
+    log = async msg => (this.Debug && console.log(msg)) || msg;
   }
 
   private async bootstrap() {
     await this.resetSquawkTimer();
     await this.deployCanaryWorkflow();
+    await this.stopCanaryWorkflows();
     await this.startCanaryWorkflow();
     await this.setupWorker();
   }
@@ -64,6 +65,15 @@ export class ZeebeCanary {
       );
   }
 
+  private async stopCanaryWorkflows() {
+    await this.zbc.publishMessage({
+      name: "halt_canary",
+      correlationKey: this.CanaryId,
+      timeToLive: 0,
+      variables: {}
+    });
+  }
+
   private async startCanaryWorkflow() {
     // Start an instance of the process
     // @TODO - redeploy if this throws due to NOT FOUND
@@ -73,7 +83,7 @@ export class ZeebeCanary {
         canaryId: this.CanaryId
       }
     );
-    log(`Created canary job ${res.workflowInstanceKey}`);
+    await log(`Created canary job ${res.workflowInstanceKey}`);
   }
 
   private setupWorker() {
@@ -82,7 +92,7 @@ export class ZeebeCanary {
       `chirp-${this.CanaryId}`,
       async (job, complete) => {
         try {
-          log(`Completed canary job ${job.key}`);
+          await log(`Completed canary job ${job.key}`);
           await complete.success();
           // Cancel any other running workflows
           await this.zbc.publishMessage({
@@ -91,7 +101,7 @@ export class ZeebeCanary {
             timeToLive: 0,
             variables: {}
           });
-          log("Published 'halt_canary' message");
+          await log("Published 'halt_canary' message");
           if (this.ChirpUrl) {
             Axios.get(this.ChirpUrl).catch(console.log);
           }
