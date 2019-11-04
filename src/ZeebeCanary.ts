@@ -11,6 +11,7 @@ export interface ZeebeCanaryOptions {
   HeartbeatPeriodSeconds: number;
   CanaryId: string;
   ZBConfig?: ZB.ZBClientOptions;
+  Debug?: boolean;
 }
 
 export class ZeebeCanary {
@@ -20,6 +21,7 @@ export class ZeebeCanary {
   CanaryId: string;
   zbc: ZB.ZBClient;
   squawkTimer!: NodeJS.Timeout;
+  Debug?: boolean;
 
   constructor(config: ZeebeCanaryOptions) {
     this.SquawkUrl = config.SquawkUrl;
@@ -27,7 +29,7 @@ export class ZeebeCanary {
     this.HeartbeatPeriodSeconds = config.HeartbeatPeriodSeconds;
     this.CanaryId = config.CanaryId;
     this.zbc = new ZBClient(config.ZBConfig);
-
+    this.Debug = config.Debug;
     this.bootstrap();
   }
 
@@ -54,7 +56,7 @@ export class ZeebeCanary {
       })
       .then(res =>
         console.log(
-          `Deployed Canary process: ${res.workflows[0].bpmnProcessId}`
+          `Deployed Canary process: ${res.workflows[0].bpmnProcessId}. Heartbeat: ${this.HeartbeatPeriodSeconds} seconds.`
         )
       );
   }
@@ -62,17 +64,26 @@ export class ZeebeCanary {
   private async startCanaryWorkflow() {
     // Start an instance of the process
     // @TODO - redeploy if this throws due to NOT FOUND
-    await this.zbc.createWorkflowInstance(`canary-${this.CanaryId}`, {
-      canaryId: this.CanaryId
-    });
+    const res = await this.zbc.createWorkflowInstance(
+      `canary-${this.CanaryId}`,
+      {
+        canaryId: this.CanaryId
+      }
+    );
+    if (this.Debug) {
+      console.log(`Created canary job ${res.workflowInstanceKey}`);
+    }
   }
 
   private setupWorker() {
     this.zbc.createWorker(
       null,
       `chirp-${this.CanaryId}`,
-      async (_, complete) => {
+      async (job, complete) => {
         try {
+          if (this.Debug) {
+            console.log(`Completed canary job ${job.key}`);
+          }
           await complete.success();
           // Cancel any other running workflows
           await this.zbc.publishMessage({
@@ -81,6 +92,7 @@ export class ZeebeCanary {
             timeToLive: 0,
             variables: {}
           });
+          console.log("Published 'halt_canary' message");
           if (this.ChirpUrl) {
             Axios.get(this.ChirpUrl).catch(console.log);
           }

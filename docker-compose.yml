@@ -9,7 +9,7 @@ services:
     environment:
       - CHIRP_URL
       - SQUAWK_URL
-      - CANARY_HEARTBEAT_MS
+      - CANARY_HEARTBEAT_SEC
       - ZEEBE_ADDRESS
       - ZEEBE_CLIENT_ID
       - ZEEBE_CLIENT_SECRET
