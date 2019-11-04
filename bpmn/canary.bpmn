@@ -45,18 +45,13 @@
     <bpmn:sequenceFlow id="SequenceFlow_0ff0dc8" sourceRef="SubProcess_1tkcsf1" targetRef="EndEvent_0oa9ycr" />
     <bpmn:sequenceFlow id="SequenceFlow_0dugk8k" sourceRef="StartEvent_0ftwb47" targetRef="SubProcess_1tkcsf1" />
   </bpmn:process>
-  <bpmn:message id="Message_0s3jp4c" name="halt_canary">
-    <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="canaryId" />
-    </bpmn:extensionElements>
-  </bpmn:message>
   <bpmn:message id="Message_136y6i8" name="halt-canary">
     <bpmn:extensionElements>
       <zeebe:subscription correlationKey="canaryId" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="canary-">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="canary-{{canaryId}}">
       <bpmndi:BPMNShape id="ServiceTask_1a77qc5_di" bpmnElement="ServiceTask_1a77qc5">
         <dc:Bounds x="490" y="140" width="100" height="80" />
       </bpmndi:BPMNShape>

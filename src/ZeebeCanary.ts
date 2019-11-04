@@ -67,11 +67,12 @@ export class ZeebeCanary {
 
   private async stopCanaryWorkflows() {
     await this.zbc.publishMessage({
-      name: "halt_canary",
+      name: "halt-canary",
       correlationKey: this.CanaryId,
       timeToLive: 0,
       variables: {}
     });
+    await log(`Published 'halt-canary' message`);
   }
 
   private async startCanaryWorkflow() {
@@ -95,12 +96,7 @@ export class ZeebeCanary {
           await log(`Completed canary job ${job.key}`);
           await complete.success();
           // Cancel any other running workflows
-          await this.zbc.publishMessage({
-            name: "halt_canary",
-            correlationKey: this.CanaryId,
-            timeToLive: 0,
-            variables: {}
-          });
+          await this.stopCanaryWorkflows();
           await log("Published 'halt_canary' message");
           if (this.ChirpUrl) {
             Axios.get(this.ChirpUrl).catch(console.log);
@@ -109,6 +105,9 @@ export class ZeebeCanary {
           this.resetSquawkTimer();
           await this.startCanaryWorkflow();
         }
+      },
+      {
+        timeout: 30000
       }
     );
   }
