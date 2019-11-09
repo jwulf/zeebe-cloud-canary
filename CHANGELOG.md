@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.2
+-   Set default polling interval to 30s
+
 ## 1.1.0
 -   Add Docker Compose configuration to run canary straight outta GitHub.
 

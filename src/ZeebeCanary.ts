@@ -30,7 +30,9 @@ export class ZeebeCanary {
     this.ChirpUrl = config.ChirpUrl;
     this.HeartbeatPeriodSeconds = config.HeartbeatPeriodSeconds;
     this.CanaryId = config.CanaryId;
-    this.zbc = new ZBClient(config.ZBConfig);
+    const cfg = config.ZBConfig || {};
+    cfg.longPoll = cfg.longPoll || 30000;
+    this.zbc = new ZBClient(cfg);
     this.Debug = config.Debug;
     this.bootstrap();
     log = async msg => (this.Debug && console.log(msg)) || msg;
