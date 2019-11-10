@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/jwulf/zeebe-cloud-canary#readme",
   "devDependencies": {
-    "typescript": "^3.7.0-beta"
+    "typescript": "^3.7.0"
   },
   "dependencies": {
     "axios": "^0.19.0",
