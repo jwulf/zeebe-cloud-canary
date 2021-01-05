@@ -27,7 +27,7 @@
     "typescript": "^3.7.0"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "micromustache": "^6.1.1",
     "zeebe-node": "^0.21.2"
   }
